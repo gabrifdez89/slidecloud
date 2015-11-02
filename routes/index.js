@@ -1,13 +1,16 @@
-var express = require('express');
-var router = express.Router();
-
-var fileController = require('../controllers/file_controller.js');
+var express = require('express'),
+	router = express.Router(),
+	multer  = require('multer'),
+	upload = multer({dest: './uploads/'}),
+	fileController = require('../controllers/file_controller.js');
 
 /* GET home page. */
 router.get('/', function(req, res) {
   res.render('index', { title: 'Express' });
 });
 
-router.get('/users/:user/files', fileController.files);
+// API routes
+router.get('/users/:user/files', 							fileController.files);
+router.post('/users/:user/files', upload.array('file'),		fileController.create);
 
 module.exports = router;
