@@ -5,14 +5,14 @@ var express = require('express'),
   cookieParser = require('cookie-parser'),
   bodyParser = require('body-parser'),
   cors = require('cors'),
-  routes = require('./routes/index'),
+  routes = require('./modules/routes/index'),
   app = express();
 
 // Allow CORS
 app.use(cors());
 
 // view engine setup -> I won't need this in future
-app.set('views', path.join(__dirname, 'views'));
+app.set('views', path.join(__dirname, 'modules/views'));
 app.set('view engine', 'ejs');
 
 app.use(logger('dev'));
