@@ -12,5 +12,6 @@ router.get('/', function(req, res) {
 // API routes
 router.get('/users/:user/files', 							fileController.files);
 router.post('/users/:user/files', upload.array('file'),		fileController.create);
+router.delete('/users/:user/files/:fileId',					fileController.delete);
 
 module.exports = router;

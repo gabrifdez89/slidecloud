@@ -23,3 +23,15 @@ exports.moveFilesToTree = function (files, fileNames, user, callback, errorCallb
 		callback();
 	}
 };
+
+exports.deleteFile = function (file, callback, errorCallback) {
+	var destiny = destinyPath + file.path;
+	fs.unlink(destiny, function (error) {
+		if(error) {
+			console.log('Unable to find ' + destiny);
+			errorCallback(error);
+		} else {
+			callback(file);
+		}
+	});
+};

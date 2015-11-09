@@ -41,3 +41,24 @@ exports.create = function (req, res, next) {
 	 	res.status(500).send();
  	});
 };
+
+//DELETE /users/:user/files/:fileId
+exports.delete = function (req, res, next) {
+	filesHandler.getFileById(req.params.fileId, function (file) {
+		if(file) {
+			fileSystemHandler.deleteFile(file, function(file) {
+				filesHandler.deleteFile(file, function () {
+					res.status(200).send('File found');
+				}, function (error) {
+					res.status(500).send('Error deleting file');
+				});
+			}, function (error) {
+				res.status(404).send('File not found in file system');
+			});
+		} else {
+			res.status(404).send('File not found');
+		}
+	}, function () {
+		res.status(500).send('Error finding file');
+	})
+};

@@ -1,5 +1,14 @@
 var models = require('../models/models.js');
 
+exports.getFileById = function (id, callback, errorCallback) {
+	models.File.findById(id)
+	.then(function (file) {
+		callback(file);
+	}).catch(function (error) {
+		errorCallback(error);
+	});
+};
+
 exports.getFilesByUserId = function (id, callback) {
 	models.File.findAll({
 		where: {
@@ -55,4 +64,13 @@ exports.saveFiles = function (files, callback, errorCallback) {
 	} else {
 		callback(savedFiles);
 	}
+};
+
+exports.deleteFile = function (file, callback, errorCallback) {
+	file.destroy()
+	.then(function () {
+		callback();
+	}).catch(function (error) {
+		errorCallback(error);
+	});
 };
