@@ -1,4 +1,5 @@
-var models = require('../models/models.js');
+var models = require('../models/models.js'),
+	usersHandler = require('../persistence/usersHandler.js');
 
 exports.getFileById = function (id, callback, errorCallback) {
 	models.File.findById(id)
@@ -72,5 +73,24 @@ exports.deleteFile = function (file, callback, errorCallback) {
 		callback();
 	}).catch(function (error) {
 		errorCallback(error);
+	});
+};
+
+exports.userHasSomeFileWithName = function (userName, files, hasCallback, hasNotCallback) {
+
+	usersHandler.getUserByUserName(userName, function (user) {
+		exports.getFilesByUserId(user.id, function (userFiles) {
+			var hasSome = false;
+
+			files.forEach(function (fileName) {
+				userFiles.forEach(function (userFile) {
+					if(fileName === userFile.name) {
+						hasSome = true;
+					}
+				})
+			});
+
+			hasSome ? hasCallback() : hasNotCallback();
+		});
 	});
 };

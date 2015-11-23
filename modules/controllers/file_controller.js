@@ -21,26 +21,35 @@ exports.files = function (req, res, next) {
 
 //POST /users/:user/files
 exports.create = function (req, res, next) {
- 	fileSystemHandler.moveFilesToTree(req.files, req.body.data, req.params.user, function () {
- 		usersHandler.getUserByUserName(req.params.user, function (user) {
- 			if(user) {
-	 			filesHandler.createFiles(req.body.data, user, function (files) {
-	 				filesHandler.saveFiles(files, function (savedFiles) {
-			 			res.status(201).send();
-	 				}, function (error) {
-	 					console.log('Error persisting files');
-			 			res.status(500).send();
-	 				});
-	 			});
-	 		} else {
-	 			console.log('Unable to find user');
-	 			res.status(404).send('User not found');
-	 		}
+ 	filesHandler.userHasSomeFileWithName(req.params.user, req.body.data, function () {
+ 		fileSystemHandler.deleteUploadedFiles(req.files, function () {
+ 			res.status(400).send('User already have some files with those names');
+ 		}, function (error) {
+ 			console.log('Error removing uploaded files. Some of them have not been erased.');
+ 			res.status(400).send('User already have some files with those names');
  		});
- 	}, function (error) {
- 		console.log('Error moving files');
-	 	res.status(500).send();
- 	});
+ 	}, function () {
+	 	fileSystemHandler.moveFilesToTree(req.files, req.body.data, req.params.user, function () {
+	 		usersHandler.getUserByUserName(req.params.user, function (user) {
+	 			if(user) {
+		 			filesHandler.createFiles(req.body.data, user, function (files) {
+		 				filesHandler.saveFiles(files, function (savedFiles) {
+				 			res.status(201).send();
+		 				}, function (error) {
+		 					console.log('Error persisting files');
+				 			res.status(500).send();
+		 				});
+		 			});
+		 		} else {
+		 			console.log('Unable to find user');
+		 			res.status(404).send('User not found');
+		 		}
+	 		});
+	 	}, function (error) {
+	 		console.log('Error moving files');
+		 	res.status(500).send();
+	 	});
+	});
 };
 
 //DELETE /users/:user/files/:fileId

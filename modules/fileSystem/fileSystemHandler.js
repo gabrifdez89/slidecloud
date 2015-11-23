@@ -36,6 +36,20 @@ exports.deleteFile = function (file, callback, errorCallback) {
 	});
 };
 
+exports.deleteUploadedFiles = function (files, callback, errorCallback) {
+	var err;
+
+	files.forEach(function (file) {
+		var destiny = originPath + file.filename;
+
+		fs.unlink(destiny, function (error) {
+			err = error;
+		});
+	});
+
+	err ? errorCallback(err) : callback(files);
+};
+
 exports.getFile = function (file, callback, errorCallback) {
 	var destiny = destinyPath + file.path;
 	fs.readFile(destiny, 'binary', function (err, data) {
