@@ -24,27 +24,6 @@ sequelize.sync().then(function () {
 				username: 'pepe',
 				pass: '1234'
 			});
-
-			// User.create({
-			// 	username: 'antonio',
-			// 	pass: '1234'
-			// });
-
-			// File.create({
-			// 	name: 'mySlides.pdf',
-			// 	path: 'pepe/mySlides.pdf',
-			// 	baseUrl: 'users/pepe/files/',
-			// 	UserId: 1
-			// });
-
-			// File.create({
-			// 	name: 'tfg.pdf',
-			// 	file: 'pepe/mySlides.pdf',
-			// 	baseUrl: 'users/pepe/files/',
-			// 	UserId: 1
-			// }).then(function () {
-			// 	console.log('Files table initialized with second element');
-			// });
 		}
 	});
 });

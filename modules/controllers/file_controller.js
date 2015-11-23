@@ -2,7 +2,8 @@ var models = require('../models/models.js'),
 	filesMapper = require('../dto/dtoMappers/filesMapper.js'),
 	fileSystemHandler = require('../fileSystem/fileSystemHandler.js'),
 	usersHandler = require('../persistence/usersHandler.js'),
-	filesHandler = require('../persistence/filesHandler.js');
+	filesHandler = require('../persistence/filesHandler.js'),
+	mime = require('mime');
 
 // GET /users/:user/files
 exports.files = function (req, res, next) {
@@ -48,7 +49,7 @@ exports.delete = function (req, res, next) {
 		if(file) {
 			fileSystemHandler.deleteFile(file, function(file) {
 				filesHandler.deleteFile(file, function () {
-					res.status(200).send('File found');
+					res.status(200).send('File deleted');
 				}, function (error) {
 					res.status(500).send('Error deleting file');
 				});
@@ -60,5 +61,26 @@ exports.delete = function (req, res, next) {
 		}
 	}, function () {
 		res.status(500).send('Error finding file');
-	})
+	});
+};
+
+//GET /users/:user/files/:fileId
+exports.get = function (req, res, next) {
+	filesHandler.getFileById(req.params.fileId, function (file) {
+		if (file) {
+			fileSystemHandler.getFile(file, function (f) {
+				res.setHeader('Content-Length', f.length);
+				res.setHeader('Content-disposition', 'attachment; filename="' + file.name + '"');
+				res.setHeader('Content-Type', mime.lookup(file.name));
+				res.write(f, 'binary');
+				res.status(200).end();
+			}, function (error) {
+				res.status(404).send('File not found in file system');
+			});
+		} else {
+			res.status(404).send('File not found');
+		}
+	}, function (error) {
+		res.status(500).send('Error finding file');
+	});
 };

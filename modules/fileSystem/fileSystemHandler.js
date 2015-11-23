@@ -35,3 +35,15 @@ exports.deleteFile = function (file, callback, errorCallback) {
 		}
 	});
 };
+
+exports.getFile = function (file, callback, errorCallback) {
+	var destiny = destinyPath + file.path;
+	fs.readFile(destiny, 'binary', function (err, data) {
+		if(err) {
+			console.log('Unable to find ' + destiny);
+			errorCallback(err);
+		} else {
+			callback(data);
+		}
+	});
+};

@@ -13,5 +13,6 @@ router.get('/', function(req, res) {
 router.get('/users/:user/files', 							fileController.files);
 router.post('/users/:user/files', upload.array('file'),		fileController.create);
 router.delete('/users/:user/files/:fileId',					fileController.delete);
+router.get('/users/:user/files/:fileId',						fileController.get);
 
 module.exports = router;
