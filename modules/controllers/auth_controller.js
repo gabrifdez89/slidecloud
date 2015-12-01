@@ -10,9 +10,14 @@ exports.post = function (req, res, next) {
 			if(req.body.pass !== user.pass) {
 				res.status(401).send('Authentication failed. Wrong password');
 			} else {
-				var token = jwt.sign(user, secret, {
-					expiresInMinutes: 1440
-				});
+				var expDate = new Date();
+					expDate.setDate(expDate.getDate() + 1);
+
+				var tokenData = {
+						username: user.username,
+						exp: expDate
+					},
+					token = jwt.sign(tokenData, secret);
 				res.status(200).send(token);
 			}
 		}
