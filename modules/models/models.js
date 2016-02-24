@@ -24,6 +24,10 @@ sequelize.sync().then(function () {
 				username: 'pepe',
 				pass: '1234'
 			});
+			User.create({
+				username: 'juan',
+				pass: '5678'
+			});
 		}
 	});
 });

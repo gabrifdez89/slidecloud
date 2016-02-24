@@ -10,16 +10,29 @@ exports.post = function (req, res, next) {
 			if(req.body.pass !== user.pass) {
 				res.status(401).send('Authentication failed. Wrong password');
 			} else {
-				var expDate = new Date();
-					expDate.setDate(expDate.getDate() + 1);
-
 				var tokenData = {
-						username: user.username,
-						exp: expDate
+						username: user.username
 					},
-					token = jwt.sign(tokenData, secret);
+					token = jwt.sign(tokenData, secret, {
+						expiresIn: 86400
+					});
 				res.status(200).send(token);
 			}
+		}
+	});
+};
+
+exports.verifyToken = function (token, username) {
+	jwt.verify(token, secret, function (err, decoded) {
+		if(err) {
+			console.log('error verifying');
+			return false;
+		} else {
+			if(decoded.username !== username) {
+				return false;
+			}
+
+			return decoded;
 		}
 	});
 };
