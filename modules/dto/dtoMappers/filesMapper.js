@@ -1,12 +1,17 @@
 var fileDtoFactory = require('../../dto/dtoFactories/fileDtoFactory.js');
 
-exports.mapFilesToDtos = function (files) {
-	var dtos = [];
+exports.mapFilesToDtos = mapFilesToDtos;
 
-	files.forEach(function (file) {
-		var dto =  fileDtoFactory.createFileDto(file);
-		dtos.push(dto);
-	});
+function mapFilesToDtos (files) {
+	var dtos = [],
+		callbackArgument = {dtos: dtos};
+
+	files.forEach(mapFileToDto.bind(callbackArgument));
 
 	return dtos;
+};
+
+function mapFileToDto (file) {
+	var dto =  fileDtoFactory.createFileDto(file);
+	this.dtos.push(dto);
 };
