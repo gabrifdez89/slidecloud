@@ -115,33 +115,53 @@ function onSaveFilesFailed (error) {
 
 //DELETE /users/:user/files/:fileId
 function deleteFn (req, res, next) {
-	if(req.headers['token']) {
-		var verify = authController.verifyToken(req.headers['token'], req.params.user);
-		if(verify !== false) {
-			filesHandler.getFileById(req.params.fileId, function (file) {
-				if(file) {
-					fileSystemHandler.deleteFile(file, function(file) {
-						filesHandler.deleteFile(file, function () {
-							res.status(200).send('File deleted');
-						}, function (error) {
-							res.status(500).send('Error deleting file');
-						});
-					}, function (error) {
-						res.status(404).send('File not found in file system');
-					});
-				} else {
-					res.status(404).send('File not found');
-				}
-			}, function () {
-				res.status(500).send('Error finding file');
-			});
-		} else {
-			res.status(401).send('Provided token is not valid for this action');
-		}
-	} else {
+	if(!req.headers['token']) {
 		res.status(401).send('You need to provide a token for that action');
+	} else {
+		var verify = authController.verifyToken(req.headers['token'], req.params.user);
+		if(verify === false) {
+			res.status(401).send('Provided token is not valid for this action');
+		} else {
+			var callbackArgument = {req: req, res: res};
+			filesHandler.getFileById(req.params.fileId,
+				deleteFile.bind(callbackArgument),
+				onGetFileByIdFailed.bind(callbackArgument));
+		}
 	}
+};
 
+function deleteFile (file) {
+	if(!file) {
+		this.res.status(404).send('File not found');
+	} else {
+		var callbackArgument = {req: this.req, res: this.res};
+		fileSystemHandler.deleteFile(file,
+			deleteFileFromDataBase.bind(callbackArgument),
+			onDeleteFileFailed.bind(callbackArgument));
+	}
+};
+
+function deleteFileFromDataBase (file) {
+	var callbackArgument = {req: this.req, res: this.res};
+	filesHandler.deleteFile(file,
+		onDeleteFileFromDataBaseSucceded.bind(callbackArgument),
+		onDeleteFileFromDataBaseFailed.bind(callbackArgument));
+};
+
+function onDeleteFileFromDataBaseSucceded () {
+	this.res.status(200).send('File deleted');
+};
+
+function onDeleteFileFromDataBaseFailed (error) {
+	this.res.status(500).send('Error deleting file');
+};
+
+function onDeleteFileFailed (error) {
+	this.res.status(404).send('File not found in file system');
+};
+
+function onGetFileByIdFailed () {
+	this.res.status(500).send('Error finding file');
 };
 
 //GET /users/:user/files/:fileId
