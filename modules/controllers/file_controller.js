@@ -166,21 +166,31 @@ function onGetFileByIdFailed () {
 
 //GET /users/:user/files/:fileId
 function get (req, res, next) {
-	filesHandler.getFileById(req.params.fileId, function (file) {
-		if (file) {
-			fileSystemHandler.getFile(file, function (f) {
-				res.setHeader('Content-Length', f.length);
-				res.setHeader('Content-disposition', 'attachment; filename="' + file.name + '"');
-				res.setHeader('Content-Type', mime.lookup(file.name));
-				res.write(f, 'binary');
-				res.status(200).end();
-			}, function (error) {
-				res.status(404).send('File not found in file system');
-			});
-		} else {
-			res.status(404).send('File not found');
-		}
-	}, function (error) {
-		res.status(500).send('Error finding file');
-	});
+	var callbackArgument = {req: req, res: res};
+	filesHandler.getFileById(req.params.fileId,
+		getFile.bind(callbackArgument),
+		onGetFileByIdFailed.bind(callbackArgument));
+};
+
+function getFile (file) {
+	if(!file) {
+		this.res.status(404).send('File not found');
+	} else {
+		var callbackArgument = {req: this.req, res: this.res};
+		fileSystemHandler.getFile(file,
+			sendFile.bind(callbackArgument),
+			onGetFileFailed.bind(callbackArgument));
+	}
+};
+
+function sendFile (f) {
+	this.res.setHeader('Content-Length', f.length);
+	this.res.setHeader('Content-disposition', 'attachment; filename="' + file.name + '"');
+	this.res.setHeader('Content-Type', mime.lookup(file.name));
+	this.res.write(f, 'binary');
+	this.res.status(200).end();
+};
+
+function onGetFileFailed (error) {
+	this.res.status(404).send('File not found in file system');
 };
