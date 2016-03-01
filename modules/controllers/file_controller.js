@@ -59,8 +59,8 @@ function create (req, res, next) {
 function undoChanges () {
 	var callbackArgument = {res: this.res, req: this.req};
 	fileSystemHandler.deleteUploadedFiles(this.req.files,
-		onDeleteUploadedFilesSucceeded.bind(callbackArgument),
-		onDeleteUploadedFilesFailed.bind(callbackArgument));
+		onDeleteUploadedFilesFailed.bind(callbackArgument),
+		onDeleteUploadedFilesSucceeded.bind(callbackArgument));
 };
 
 function onDeleteUploadedFilesSucceeded () {

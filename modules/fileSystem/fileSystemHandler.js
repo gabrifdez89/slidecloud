@@ -49,10 +49,9 @@ function onRename (err) {
 /*.**/
 function deleteFile (file, errorCallback, callback) {
 	try{
-		var destiny = destinyPath + file.path,
-			callbackArgument = {destiny: destiny};
+		var destiny = destinyPath + file.path;
 
-		fs.unlink(destiny, onUnlink.bind(callbackArgument));
+		fs.unlink(destiny, onUnlink);
 		callback();
 	}catch(error) {
 		errorCallback(error);
@@ -67,18 +66,19 @@ function onUnlink (error) {
 };
 
 /*.**/
-function deleteUploadedFiles (files, callback, errorCallback) {
-	var err;
+function deleteUploadedFiles (files, errorCallback, callback) {
+	try{
+		files.forEach(deleteUploadedFile);
+		callback(files);
+	}catch (error) {
+		errorCallback(error);
+	}
+};
 
-	files.forEach(function (file) {
-		var destiny = originPath + file.filename;
+function deleteUploadedFile (file) {
+	var destiny = originPath + file.filename;
 
-		fs.unlink(destiny, function (error) {
-			err = error;
-		});
-	});
-
-	err ? errorCallback(err) : callback(files);
+	fs.unlink(destiny, onUnlink);
 };
 
 /*.**/
