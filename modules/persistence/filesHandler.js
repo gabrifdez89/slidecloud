@@ -1,7 +1,17 @@
 var models = require('../models/models.js'),
 	usersHandler = require('../persistence/usersHandler.js');
 
-exports.getFileById = function (id, callback, errorCallback) {
+exports.getFileById = getFileById;
+exports.getFilesByUserId = getFilesByUserId;
+exports.createFile = createFile;
+exports.createFiles = createFiles;
+exports.saveFile = saveFile;
+exports.saveFiles = saveFiles;
+exports.deleteFile = deleteFile;
+exports.userHasSomeFileWithName = userHasSomeFileWithName;
+
+/*.**/
+function getFileById (id, errorCallback, callback) {
 	models.File.findById(id)
 	.then(function (file) {
 		callback(file);
@@ -10,37 +20,61 @@ exports.getFileById = function (id, callback, errorCallback) {
 	});
 };
 
-exports.getFilesByUserId = function (id, callback) {
+/*.**/
+function getFilesByUserId (id, errorCallback, callback) {
 	models.File.findAll({
 		where: {
 			userId: id
 		}
 	}).then(function (files) {
 		callback(files);
+	}).catch(function (error) {
+		errorCallback(error);
 	});
 };
 
-exports.createFile = function (fileName, user, callback) {
-	var file = models.File.build({
-		name: fileName,
-		path: user.username + '/' + fileName,
-		baseUrl: 'users/' + user.username + '/files/',
-		UserId: user.id
-	});
-	callback(file);
-};
-
-exports.createFiles = function (fileNames, user, callback) {
-	var files = [];
-	fileNames.forEach(function (fileName) {
-		exports.createFile(fileName, user, function (file) {
-			files.push(file);
+/*.**/
+function createFile (fileName, user, errorCallback, callback) {
+	try{
+		var file = models.File.build({
+			name: fileName,
+			path: user.username + '/' + fileName,
+			baseUrl: 'users/' + user.username + '/files/',
+			UserId: user.id
 		});
-	});
-	callback(files);
+		callback(file);
+	}catch(error){
+		console.log('Error creating the file ' + fileName);
+		errorCallback(error);
+	}
 };
 
-exports.saveFile = function (file, callback, errorCallback) {
+/*.**/
+function createFiles (fileNames, user, errorCallback, callback) {
+	var files = [],
+		callbackArgument = {errorCallback: errorCallback, callback: callback, user: user, files: files};
+	fileNames.forEach(createFileAndAddIt.bind(callbackArgument));
+	callback(files);
+
+};
+
+function createFileAndAddIt (fileName) {
+	var callbackArgument = {errorCallback: this.errorCallback, callback: this.callback, files: this.files, fileName: fileName};
+	createFile(fileName, this.user,
+		onCreateFileFailed.bind(callbackArgument),
+		addFile.bind(callbackArgument));
+};
+
+function onCreateFileFailed (error) {
+	this.errorCallback(error);
+};
+
+function addFile (file) {
+	this.files.push(file);
+};
+
+/*.**/
+function saveFile (file, errorCallback, callback) {
 	file.save({
 		fields: ['name', 'path', 'baseUrl', 'UserId']
 	}).then(function (savedFile) {
@@ -50,16 +84,14 @@ exports.saveFile = function (file, callback, errorCallback) {
 	});
 };
 
-exports.saveFiles = function (files, callback, errorCallback) {
+/*.**/
+function saveFiles (files, errorCallback, callback) {
 	var savedFiles = [],
-		errors = [];
-	files.forEach(function (file) {
-		exports.saveFile(file, function (savedFile) {
-			savedFiles.push(savedFile);
-		}, function (error) {
-			errors.push(error);
-		});
-	});
+		errors = [],
+		callbackArgument = {savedFiles: savedFiles, errors: errors};
+
+	files.forEach(saveFileAndAddIt.bind(callbackArgument));
+
 	if(errors.length > 0) {
 		errorCallback(errors);
 	} else {
@@ -67,7 +99,24 @@ exports.saveFiles = function (files, callback, errorCallback) {
 	}
 };
 
-exports.deleteFile = function (file, callback, errorCallback) {
+function saveFileAndAddIt (file) {
+	var callbackArgument = {savedFiles: this.savedFiles, errors: this.errors};
+
+	saveFile(file,
+		addToErrors.bind(callbackArgument),
+		addToSaved.bind(callbackArgument));
+};
+
+function addToErrors (error) {
+	this.errors.push(error);
+};
+
+function addToSaved (savedFile) {
+	this.savedFiles.push(savedFile);
+};
+
+/*.**/
+function deleteFile (file, errorCallback, callback) {
 	file.destroy()
 	.then(function () {
 		callback();
@@ -76,21 +125,49 @@ exports.deleteFile = function (file, callback, errorCallback) {
 	});
 };
 
-exports.userHasSomeFileWithName = function (userName, files, hasCallback, hasNotCallback) {
+/*.**/
+function userHasSomeFileWithName (userName, files, errorCallback, callback) {
+	var callbackArgument = {errorCallback: errorCallback, callback: callback, files: files};
 
-	usersHandler.getUserByUserName(userName, function (user) {
-		exports.getFilesByUserId(user.id, function (userFiles) {
-			var hasSome = false;
+	usersHandler.getUserByUserName(userName,
+		onGetUsersByUserNameFailed.bind(callbackArgument),
+		getFilesByUserIdAndCheckNames.bind(callbackArgument));
+};
 
-			files.forEach(function (fileName) {
-				userFiles.forEach(function (userFile) {
-					if(fileName === userFile.name) {
-						hasSome = true;
-					}
-				})
-			});
+function onGetUsersByUserNameFailed (error) {
+	console.log('error getting users by user name: ' + error);
+	this.errorCallback(error);
+};
 
-			hasSome ? hasCallback() : hasNotCallback();
-		});
-	});
+function getFilesByUserIdAndCheckNames (user) {
+	var callbackArgument = {errorCallback: this.errorCallback, callback: this.callback, files: this.files};
+
+	getFilesByUserId(user.id,
+		onGetFilesByUserIdFailed.bind(callbackArgument),
+		checkFilesNames.bind(callbackArgument));
+};
+
+function onGetFilesByUserIdFailed (error) {
+	this.errorCallback(error);
+};
+
+function checkFilesNames (userFiles) {
+	var hasSome = false,
+		callbackArgument = {hasSome: hasSome, userFiles: userFiles};
+
+	this.files.forEach(checkFileName.bind(callbackArgument));
+
+	this.callback(hasSome);
+};
+
+function checkFileName (fileName) {
+	var callbackArgument = {hasSome: this.hasSome, fileName: fileName};
+
+	this.userFiles.forEach(compareFileNameAndUpdateFlag.bind(callbackArgument));
+};
+
+function compareFileNameAndUpdateFlag (userFile) {
+	if(this.fileName === userFile.name) {
+		this.hasSome = true;
+	}
 };

@@ -7,7 +7,15 @@ exports.verifyToken = verifyToken;
 
 /*.**/
 function post (req, res, next) {
-	usersHandler.getUserByUserName(req.body.username, onGetUserByUserName.bind({res: res, req: req}));
+	var callbackArgument = {res: res, req: req};
+
+	usersHandler.getUserByUserName(req.body.username,
+		onGetUserByUserNameFailed.bind(callbackArgument),
+		onGetUserByUserName.bind(callbackArgument));
+};
+
+function onGetUserByUserNameFailed (error) {
+	this.res.status(500).send('Error looking for that user');
 };
 
 function onGetUserByUserName (user) {

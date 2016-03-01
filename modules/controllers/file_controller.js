@@ -30,8 +30,14 @@ function getFilesByUserId (user) {
 	if(!user) {
 		res.status(404).send('User not found');
 	} else {
-		filesHandler.getFilesByUserId(user.id, mapFilesToDtos.bind({res: this.res}));
+		var callbackArgument = {res: this.res, req: this.req};
+		filesHandler.getFilesByUserId(user.id, onGetFilesByUserIdFailed.bind(callbackArgument) , mapFilesToDtos.bind(callbackArgument));
 	}
+};
+
+function onGetFilesByUserIdFailed () {
+	console.log('Error getting files by user id');
+	this.res.status(500).send();
 };
 
 function mapFilesToDtos (files) {
@@ -51,17 +57,27 @@ function create (req, res, next) {
 			var callbackArgument = {res: res, req: req};
 		 	filesHandler.userHasSomeFileWithName(req.params.user, req.body.data,
 		 		undoChanges.bind(callbackArgument),
-		 		proceedCreateFile.bind(callbackArgument),
-		 		onErrorMovingFiles.bind(callbackArgument));
+		 		checkAndCreate.bind(callbackArgument));
 		}
 	}
 };
 
 function undoChanges () {
 	var callbackArgument = {res: this.res, req: this.req};
+
 	fileSystemHandler.deleteUploadedFiles(this.req.files,
 		onDeleteUploadedFilesFailed.bind(callbackArgument),
 		onDeleteUploadedFilesSucceeded.bind(callbackArgument));
+};
+
+function checkAndCreate (hasSomeFileWithName) {
+	var callbackArgument = {res: this.res, req: this.req};
+
+	if(!hasSomeFileWithName) {
+		undoChanges.bind(callbackArgument);
+	} else {
+		proceedCreateFile.bind(callbackArgument);
+	}
 };
 
 function onDeleteUploadedFilesSucceeded () {
@@ -69,7 +85,6 @@ function onDeleteUploadedFilesSucceeded () {
 };
 
 function onDeleteUploadedFilesFailed (error) {
-	console.log('Error removing uploaded files. Some of them have not been erased.');
 	this.res.status(400).send('User already have some files with those names');
 };
 
@@ -87,7 +102,6 @@ function proceedCreateFile () {
 };
 
 function onMoveFilesToTreeFailed (error) {
-	console.log('Error moving files to tree');
 	this.res.status(500).send();
 };
 
@@ -101,16 +115,24 @@ function createFiles (user) {
 		console.log('Unable to find user');
 		this.res.status(404).send('User not found');
 	} else {
+		var callbackArgument = {req: this.req, res: this.res};
+
 		filesHandler.createFiles(this.req.body.data, user,
-			saveFiles.bind({req: this.req, res: this.res}));
+			onCreateFilesFailed.bind(callbackArgument),
+			saveFiles.bind(callbackArgument));
 	}
+};
+
+function onCreateFilesFailed (error) {
+	console.log('Error creating files: ' + error);
+	this.res.status(500).send('Internal error creating the files');
 };
 
 function saveFiles (files) {
 	var callbackArgument = {req: this.req, res: this.res};
 	filesHandler.saveFiles(files,
-		onSaveFilesSucceded.bind(callbackArgument),
-		onSaveFilesFailed.bind(callbackArgument));
+		onSaveFilesFailed.bind(callbackArgument),
+		onSaveFilesSucceded.bind(callbackArgument));
 };
 
 function onSaveFilesSucceded (savedFiles) {
@@ -133,8 +155,8 @@ function deleteFn (req, res, next) {
 		} else {
 			var callbackArgument = {req: req, res: res};
 			filesHandler.getFileById(req.params.fileId,
-				deleteFile.bind(callbackArgument),
-				onGetFileByIdFailed.bind(callbackArgument));
+				onGetFileByIdFailed.bind(callbackArgument),
+				deleteFile.bind(callbackArgument));
 		}
 	}
 };
@@ -153,8 +175,8 @@ function deleteFile (file) {
 function deleteFileFromDataBase (file) {
 	var callbackArgument = {req: this.req, res: this.res};
 	filesHandler.deleteFile(file,
-		onDeleteFileFromDataBaseSucceded.bind(callbackArgument),
-		onDeleteFileFromDataBaseFailed.bind(callbackArgument));
+		onDeleteFileFromDataBaseFailed.bind(callbackArgument),
+		onDeleteFileFromDataBaseSucceded.bind(callbackArgument));
 };
 
 function onDeleteFileFromDataBaseSucceded () {
@@ -177,8 +199,8 @@ function onGetFileByIdFailed () {
 function get (req, res, next) {
 	var callbackArgument = {req: req, res: res};
 	filesHandler.getFileById(req.params.fileId,
-		getFile.bind(callbackArgument),
-		onGetFileByIdFailed.bind(callbackArgument));
+		onGetFileByIdFailed.bind(callbackArgument),
+		getFile.bind(callbackArgument));
 };
 
 function getFile (file) {
