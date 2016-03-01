@@ -78,8 +78,16 @@ function onErrorMovingFiles (error) {
 };
 
 function proceedCreateFile () {
+	var callbackArgument = {req: this.req, res: this.res};
+
 	fileSystemHandler.moveFilesToTree(this.req.files, this.req.body.data, this.req.params.user,
-		getUserByUserName.bind({req: this.req, res: this.res}));
+		onMoveFilesToTreeFailed.bind(callbackArgument),
+		getUserByUserName.bind(callbackArgument));
+};
+
+function onMoveFilesToTreeFailed (error) {
+	console.log('Error moving files to tree');
+	this.res.status(500).send();
 };
 
 function getUserByUserName () {
