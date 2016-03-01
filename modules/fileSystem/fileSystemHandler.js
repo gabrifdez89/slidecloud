@@ -7,6 +7,7 @@ exports.deleteFile = deleteFile;
 exports.deleteUploadedFiles = deleteUploadedFiles;
 exports.getFile = getFile;
 
+/*.**/
 function moveFilesToTree (files, fileNames, user, errorCallback, callback) {
 	var fileNumber = 0,
 		callbackArgument = {
@@ -45,18 +46,27 @@ function onRename (err) {
 	}
 };
 
-function deleteFile (file, callback, errorCallback) {
-	var destiny = destinyPath + file.path;
-	fs.unlink(destiny, function (error) {
-		if(error) {
-			console.log('Unable to find ' + destiny);
-			errorCallback(error);
-		} else {
-			callback(file);
-		}
-	});
+/*.**/
+function deleteFile (file, errorCallback, callback) {
+	try{
+		var destiny = destinyPath + file.path,
+			callbackArgument = {destiny: destiny};
+
+		fs.unlink(destiny, onUnlink.bind(callbackArgument));
+		callback();
+	}catch(error) {
+		errorCallback(error);
+	}
 };
 
+function onUnlink (error) {
+	if(error) {
+		console.log('Unable to find ' + this.destiny);
+		throw error;
+	}
+};
+
+/*.**/
 function deleteUploadedFiles (files, callback, errorCallback) {
 	var err;
 
@@ -71,6 +81,7 @@ function deleteUploadedFiles (files, callback, errorCallback) {
 	err ? errorCallback(err) : callback(files);
 };
 
+/*.**/
 function getFile (file, callback, errorCallback) {
 	var destiny = destinyPath + file.path;
 	fs.readFile(destiny, 'binary', function (err, data) {
