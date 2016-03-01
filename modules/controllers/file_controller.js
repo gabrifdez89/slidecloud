@@ -11,7 +11,8 @@ exports.create = create; //POST /users/:user/files
 exports.delete = deleteFn; //DELETE /users/:user/files/:fileId
 exports.get = get; //GET /users/:user/files/:fileId
 
-// GET /users/:user/files
+
+/* GET /users/:user/files **/
 function files (req, res, next) {
 	if(!req.headers['token']) {
 		res.status(401).send('You need to provide a token for that action');
@@ -38,7 +39,7 @@ function mapFilesToDtos (files) {
 	this.res.status(200).send(dtos);
 };
 
-//POST /users/:user/files
+/* POST /users/:user/files **/
 function create (req, res, next) {
 	if(!req.headers['token']) {
 		res.status(401).send('You need to provide a token for that action');
@@ -121,7 +122,7 @@ function onSaveFilesFailed (error) {
 	this.res.status(500).send();
 };
 
-//DELETE /users/:user/files/:fileId
+/* DELETE /users/:user/files/:fileId **/
 function deleteFn (req, res, next) {
 	if(!req.headers['token']) {
 		res.status(401).send('You need to provide a token for that action');
@@ -172,7 +173,7 @@ function onGetFileByIdFailed () {
 	this.res.status(500).send('Error finding file');
 };
 
-//GET /users/:user/files/:fileId
+/* GET /users/:user/files/:fileId **/
 function get (req, res, next) {
 	var callbackArgument = {req: req, res: res};
 	filesHandler.getFileById(req.params.fileId,

@@ -5,6 +5,7 @@ var usersHandler = require('../persistence/usersHandler.js'),
 exports.post = post;
 exports.verifyToken = verifyToken;
 
+/*.**/
 function post (req, res, next) {
 	usersHandler.getUserByUserName(req.body.username, onGetUserByUserName.bind({res: res, req: req}));
 };
@@ -31,6 +32,7 @@ function signToken (username) {
 	});
 };
 
+/*.**/
 function verifyToken (token, username) {
 	jwt.verify(token, secret, onTokenVerified.bind({username: username}));
 };
