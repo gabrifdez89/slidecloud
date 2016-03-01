@@ -42,16 +42,16 @@ function moveFileToTree (file) {
 function onRename (err) {
 	if(err) {
 		console.log('Error moving file ' + this.fileNames[this.fileNumber] + ' from ' + this.origin + ' to ' + this.destiny);
-		throw err;
 	}
 };
 
 /*.**/
 function deleteFile (file, errorCallback, callback) {
 	try{
-		var destiny = destinyPath + file.path;
+		var destiny = destinyPath + file.path,
+			callbackArgument = {destiny: destiny};
 
-		fs.unlink(destiny, onUnlink);
+		fs.unlink(destiny, onUnlink.bind(callbackArgument));
 		callback();
 	}catch(error) {
 		errorCallback(error);
@@ -61,7 +61,6 @@ function deleteFile (file, errorCallback, callback) {
 function onUnlink (error) {
 	if(error) {
 		console.log('Unable to find ' + this.destiny);
-		throw error;
 	}
 };
 
@@ -82,14 +81,20 @@ function deleteUploadedFile (file) {
 };
 
 /*.**/
-function getFile (file, callback, errorCallback) {
-	var destiny = destinyPath + file.path;
-	fs.readFile(destiny, 'binary', function (err, data) {
-		if(err) {
-			console.log('Unable to find ' + destiny);
-			errorCallback(err);
-		} else {
-			callback(data);
-		}
-	});
+function getFile (file, errorCallback, callback) {
+	var destiny = destinyPath + file.path,
+		callbackArgument = {destiny: destiny, callback: callback};
+	try{
+		fs.readFile(destiny, 'binary', onReadFile);
+	}catch(error) {
+		errorCallback(error);
+	}
+};
+
+function onReadFile (error, data) {
+	if(error) {
+		console.log('Unable to find ' + this.destiny);
+	} else {
+		this.callback(data);
+	}
 };
