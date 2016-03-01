@@ -144,8 +144,8 @@ function deleteFile (file) {
 	} else {
 		var callbackArgument = {req: this.req, res: this.res};
 		fileSystemHandler.deleteFile(file,
-			deleteFileFromDataBase.bind(callbackArgument),
-			onDeleteFileFailed.bind(callbackArgument));
+			onDeleteFileFailed.bind(callbackArgument),
+			deleteFileFromDataBase.bind(callbackArgument));
 	}
 };
 
