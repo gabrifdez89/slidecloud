@@ -187,8 +187,8 @@ function getFile (file) {
 	} else {
 		var callbackArgument = {req: this.req, res: this.res};
 		fileSystemHandler.getFile(file,
-			sendFile.bind(callbackArgument),
-			onGetFileFailed.bind(callbackArgument));
+			onGetFileFailed.bind(callbackArgument),
+			sendFile.bind(callbackArgument));
 	}
 };
 

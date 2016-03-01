@@ -85,7 +85,7 @@ function getFile (file, errorCallback, callback) {
 	var destiny = destinyPath + file.path,
 		callbackArgument = {destiny: destiny, callback: callback};
 	try{
-		fs.readFile(destiny, 'binary', onReadFile);
+		fs.readFile(destiny, 'binary', onReadFile.bind(callbackArgument));
 	}catch(error) {
 		errorCallback(error);
 	}
