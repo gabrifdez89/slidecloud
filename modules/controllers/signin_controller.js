@@ -10,14 +10,14 @@ function post (req, res, next) {
 
 	usersHandler.getUserByUserName(req.body.username,
 		onGetUserByUserNameFailed.bind(callbackArgument),
-		onGetUserByUserName.bind(callbackArgument));
+		createUser.bind(callbackArgument));
 };
 
 function onGetUserByUserNameFailed (error) {
 	this.res.status(500).send('Internal error finding user');
 };
 
-function onGetUserByUserName (user) {
+function createUser (user) {
 	if(user) {
 		this.res.status(401).send('Already existing user with that username');
 	} else {
@@ -38,14 +38,14 @@ function saveUser (user) {
 
 	usersHandler.saveUser(user,
 		onSaveUserFailed.bind(callbackArgument),
-		onSaveUserSucceeded.bind(callbackArgument));
+		sendEmail.bind(callbackArgument));
 };
 
 function onSaveUserFailed (error) {
 	this.res.status(500).send('Error saving user account');
 };
 
-function onSaveUserSucceeded (user) {
+function sendEmail (user) {
 	var callbackArgument = {req: this.req, res: this.res},
 		email = emailFactory.createValidationEmail(this.req.body.email, this.req.body.username);
 
