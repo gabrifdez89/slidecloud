@@ -1,4 +1,6 @@
-var usersHandler = require('../persistence/usersHandler.js');
+var usersHandler = require('../persistence/usersHandler.js'),
+	mailingService = require('../mailing/mailingService.js'),
+	emailFactory = require('../mailing/emailFactory.js');
 
 exports.post = post;
 
@@ -44,5 +46,18 @@ function onSaveUserFailed (error) {
 };
 
 function onSaveUserSucceeded (user) {
-	this.res.status(200).send('User account created');
+	var callbackArgument = {req: this.req, res: this.res},
+		email = emailFactory.createValidationEmail(this.req.body.email, this.req.body.username);
+
+	mailingService.sendEmail(email,
+		onSendEmailFailed.bind(callbackArgument),
+		onSendEmailSucceeded.bind(callbackArgument));
 };
+
+function onSendEmailFailed (error) {
+	this.res.status(500).send('Error sending validation email');
+};
+
+function onSendEmailSucceeded (response) {
+	this.res.status(200).send('User account created');
+}

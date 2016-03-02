@@ -39,6 +39,7 @@ function saveUser (user, errorCallback, callback) {
 	}).then(function (savedUser) {
 		callback(savedUser);
 	}).catch(function (error) {
+		console.log('Error saving user ' + user.username + ': ' + error);
 		errorCallback(error);
 	});
 };
