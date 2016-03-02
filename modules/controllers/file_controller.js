@@ -21,9 +21,14 @@ function files (req, res, next) {
 		if(verify === false) {
 			res.status(401).send('Provided token is not valid for this action');
 		} else {
-			usersHandler.getUserByUserName(req.params.user, getFilesByUserId.bind({res: res}));
+			var callbackArgument = {req: req, res: res};
+			usersHandler.getUserByUserName(req.params.user, onGetUserByUserNameFailed.bind(callbackArgument) ,getFilesByUserId.bind(callbackArgument));
 		}
 	}
+};
+
+function onGetUserByUserNameFailed (error) {
+	this.res.status(404).send('User not found');
 };
 
 function getFilesByUserId (user) {
