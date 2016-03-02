@@ -3,7 +3,8 @@ var express = require('express'),
 	multer  = require('multer'),
 	upload = multer({dest: './uploads/'}),
 	fileController = require('../controllers/file_controller.js'),
-	authController = require('../controllers/auth_controller.js');
+	authController = require('../controllers/auth_controller.js'),
+	signinController = require('../controllers/signin_controller.js');
 
 /* GET home page. */
 router.get('/', function(req, res) {
@@ -17,4 +18,6 @@ router.delete('/users/:user/files/:fileId',					fileController.delete);
 router.get('/users/:user/files/:fileId',					fileController.get);
 
 router.post('/authenticate',								authController.post);
+router.post('/signin',										signinController.post);
+
 module.exports = router;

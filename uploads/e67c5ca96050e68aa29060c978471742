@@ -1,0 +1,55 @@
+javascript: 
+	window.loadIteration = window.loadIteration ? window.loadIteration + 1 : 1;
+	(function() {
+	/* Setup */
+	var viewId = 'XWF100',
+		accessId = 'WF61',
+		namespaces;
+	
+	if ( window.viewLoadedForFirstTime ) {
+		namespaces = [
+				U4.fundamentals.workflow.processdefinition.helper,
+				U4.fundamentals.workflow.processdefinition.controller,
+				U4.fundamentals.workflow.processdefinition.controller.properties,
+				U4.fundamentals.workflow.processdefinition.model.shape,
+				U4.fundamentals.workflow.processdefinition.model,
+				U4.fundamentals.workflow.processdefinition.drawer,
+				U4.fundamentals.workflow.processdefinition.plugin,
+				U4.fundamentals.workflow.processdefinition.flowchart,
+				U4.fundamentals.workflow.processdefinition.view,
+				U4.fundamentals.workflow.processdefinition.view.properties,
+				U4.fundamentals.workflow.processdefinition.store,
+				U4.fundamentals.workflow.processdefinition.proxy
+			];
+		
+		/* End setup */
+		function resetNamespace(namespace) {        
+			for (key in namespace) {            
+				if (!namespace[key] || typeof(namespace[key]) != 'function') {                
+					continue;            
+				}            
+				var file = Ext.Loader.getPath(namespace[key].$className);
+				delete namespace[key];
+				Ext.Loader.isFileLoaded[file] = null ;
+				Ext.Loader.loadScript(
+					{
+					url: file + '?i=' + window.loadIteration + '&r=' + Math.random(),
+					onLoad: function() {}            
+				});        
+			}    
+		}
+		
+		namespaces.forEach( function(namespace) {
+			resetNamespace(namespace);
+		});
+	}
+
+	setTimeout(function() {
+		U4.publish(U4.Constants.Publish.START_VIEW, {
+			viewId: viewId, accessId: accessId
+		});    
+	}, 500);
+		
+	window.viewLoadedForFirstTime = true;
+
+})();

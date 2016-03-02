@@ -1,12 +1,43 @@
 var models = require('../models/models.js');
 
-exports.getUserByUserName = function (userName, errorCallback, callback) {
+exports.getUserByUserName = getUserByUserName;
+exports.createUser = createUser;
+exports.saveUser = saveUser;
+
+/*.**/
+function getUserByUserName (userName, errorCallback, callback) {
 	models.User.find({
 		where: {
 			username: userName
 		}
 	}).then(function (user) {
 		callback(user);
+	}).catch(function (error) {
+		console.log('Error finding user by user name: ' + error);
+		errorCallback(error);
+	});
+};
+
+/*.**/
+function createUser (username, pass, email, errorCallback, callback) {
+	try{
+		var user = models.User.build({
+			username: username,
+			pass: pass
+		});
+		callback(user);
+	}catch(error){
+		console.log('Error creating the user ' + username + ': ' + error);
+		errorCallback(error);
+	}
+};
+
+/*.**/
+function saveUser (user, errorCallback, callback) {
+	user.save({
+		fields: ['username', 'pass']
+	}).then(function (savedUser) {
+		callback(savedUser);
 	}).catch(function (error) {
 		errorCallback(error);
 	});

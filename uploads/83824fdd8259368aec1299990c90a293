@@ -1,0 +1,44 @@
+javascript: 
+	window.loadIteration = window.loadIteration ? window.loadIteration + 1 : 1;
+	(function() {
+	/* Setup */
+	var viewId = 'XRS301',
+		accessId = 'RS57',
+		namespaces;
+	
+	if ( window.viewLoadedForFirstTime ) {
+		namespaces = [
+				Abw
+			];
+		
+		/* End setup */
+		function resetNamespace(namespace) {        
+			for (key in namespace) {            
+				if (!namespace[key] || typeof(namespace[key]) != 'function') {                
+					continue;            
+				}            
+				var file = Ext.Loader.getPath(namespace[key].$className);
+				delete namespace[key];
+				Ext.Loader.isFileLoaded[file] = null ;
+				Ext.Loader.loadScript(
+					{
+					url: file + '?i=' + window.loadIteration + '&r=' + Math.random(),
+					onLoad: function() {}            
+				});        
+			}    
+		}
+		
+		namespaces.forEach( function(namespace) {
+			resetNamespace(namespace);
+		});
+	}
+
+	setTimeout(function() {
+		U4.publish(U4.Constants.Publish.START_VIEW, {
+			viewId: viewId, accessId: accessId
+		});    
+	}, 500);
+		
+	window.viewLoadedForFirstTime = true;
+
+})();

@@ -79,9 +79,9 @@ function checkAndCreate (hasSomeFileWithName) {
 	var callbackArgument = {res: this.res, req: this.req};
 
 	if(!hasSomeFileWithName) {
-		undoChanges.bind(callbackArgument);
+		proceedCreateFile.bind(callbackArgument)();
 	} else {
-		proceedCreateFile.bind(callbackArgument);
+		undoChanges.bind(callbackArgument)();
 	}
 };
 
