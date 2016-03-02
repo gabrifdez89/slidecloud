@@ -23,7 +23,9 @@ function createUser (username, pass, email, errorCallback, callback) {
 	try{
 		var user = models.User.build({
 			username: username,
-			pass: pass
+			pass: pass,
+			email: email,
+			validated: false
 		});
 		callback(user);
 	}catch(error){
@@ -35,7 +37,7 @@ function createUser (username, pass, email, errorCallback, callback) {
 /*.**/
 function saveUser (user, errorCallback, callback) {
 	user.save({
-		fields: ['username', 'pass']
+		fields: ['username', 'pass', 'email', 'validated']
 	}).then(function (savedUser) {
 		callback(savedUser);
 	}).catch(function (error) {

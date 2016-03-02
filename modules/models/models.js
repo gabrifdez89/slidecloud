@@ -24,11 +24,15 @@ function populateDataBase (count) {
 	if(count === 0) {
 		User.create({
 			username: 'pepe',
-			pass: '1234'
+			pass: 'pepe',
+			email: 'pepe@pepe.com',
+			validated: true
 		});
 		User.create({
 			username: 'juan',
-			pass: '5678'
+			pass: 'juan',
+			email: 'juan@juan.com',
+			validated: true
 		});
 	}
 };

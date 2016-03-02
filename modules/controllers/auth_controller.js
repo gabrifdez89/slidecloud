@@ -11,18 +11,20 @@ function post (req, res, next) {
 
 	usersHandler.getUserByUserName(req.body.username,
 		onGetUserByUserNameFailed.bind(callbackArgument),
-		onGetUserByUserName.bind(callbackArgument));
+		checkAuthenticationAndValidation.bind(callbackArgument));
 };
 
 function onGetUserByUserNameFailed (error) {
 	this.res.status(500).send('Error looking for that user');
 };
 
-function onGetUserByUserName (user) {
+function checkAuthenticationAndValidation (user) {
 	if(!user) {
 		this.res.status(404).send('User not found')
 	} else {
-		if(this.req.body.pass !== user.pass) {
+		if (!user.validated) {
+			this.res.status(401).send('User account is not validated');
+		} else if(this.req.body.pass !== user.pass) {
 			this.res.status(401).send('Authentication failed. Wrong password');
 		} else {
 			var token = signToken(user.username);

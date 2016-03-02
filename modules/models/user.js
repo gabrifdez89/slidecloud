@@ -5,6 +5,8 @@ module.exports = user;
 function user (sequelize, DataTypes) {
 	return sequelize.define('User', {
 		username: DataTypes.STRING,
-		pass: DataTypes.STRING
+		pass: DataTypes.STRING,
+		email: DataTypes.STRING,
+		validated: DataTypes.BOOLEAN
 	});
 };
