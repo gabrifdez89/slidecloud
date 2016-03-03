@@ -5,6 +5,7 @@ var usersHandler = require('../persistence/usersHandler.js'),
 
 exports.post = post; /* POST /signin **/
 exports.validate = validate; /* POST /validate **/
+exports.requestValidationEmail = requestValidationEmail; /* POST /requestvalidationemail **/
 
 /* POST /signin **/
 function post (req, res, next) {
@@ -64,7 +65,7 @@ function onSaveUserFailed (error) {
 
 function sendEmail (user) {
 	var callbackArgument = {req: this.req, res: this.res},
-		email = emailFactory.createValidationEmail(this.req.body.email, this.req.body.username);
+		email = emailFactory.createValidationEmail(user.email, user.username);
 
 	mailingService.sendEmail(email,
 		onSendEmailFailed.bind(callbackArgument),
@@ -76,7 +77,7 @@ function onSendEmailFailed (error) {
 };
 
 function onSendEmailSucceeded (response) {
-	this.res.status(200).send('User account created');
+	this.res.status(200).send();
 };
 
 /* POST /validate **/
@@ -113,4 +114,24 @@ function onSaveUserFailed (error) {
 
 function onSaveUserSucceeded (savedUser) {
 	this.res.status(200).send('Account validated');
+};
+
+/* POST /requestvalidationemail **/
+function requestValidationEmail (req, res, next) {
+	var callbackArgument = {req: req, res: res};
+	usersHandler.getUserByUserName(req.body.username,
+		onGetUserByUserNameFailed.bind(callbackArgument),
+		verifyPassAndAccountIsNotValidated.bind(callbackArgument));
+};
+
+function verifyPassAndAccountIsNotValidated (user) {
+	if(user.pass !== this.req.body.pass) {
+		this.res.status(401).send('Wrong password.')
+	} else if(user.validated === true) {
+		this.res.status(400).send('Account is already validated.')
+	} else {
+		var callbackArgument = {req: this.req, res: this.res};
+		
+		sendEmail.bind(callbackArgument)(user);
+	}
 };

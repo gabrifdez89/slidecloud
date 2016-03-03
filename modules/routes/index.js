@@ -20,5 +20,6 @@ router.get('/users/:user/files/:fileId',					fileController.get);
 router.post('/authenticate',								authController.post);
 router.post('/signin',										signinController.post);
 router.post('/validate',									signinController.validate);
+router.post('/requestvalidationemail',						signinController.requestValidationEmail);
 
 module.exports = router;
