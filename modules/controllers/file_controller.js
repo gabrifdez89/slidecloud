@@ -111,8 +111,11 @@ function onMoveFilesToTreeFailed (error) {
 };
 
 function getUserByUserName () {
+	var callbackArgument = {req: this.req, res: this.res};
+
 	usersHandler.getUserByUserName(this.req.params.user,
-		createFiles.bind({req: this.req, res: this.res}));
+		onGetUserByUserNameFailed.bind(callbackArgument),
+		createFiles.bind(callbackArgument));
 };
 
 function createFiles (user) {
@@ -212,7 +215,7 @@ function getFile (file) {
 	if(!file) {
 		this.res.status(404).send('File not found');
 	} else {
-		var callbackArgument = {req: this.req, res: this.res};
+		var callbackArgument = {req: this.req, res: this.res, file: file};
 		fileSystemHandler.getFile(file,
 			onGetFileFailed.bind(callbackArgument),
 			sendFile.bind(callbackArgument));
@@ -221,8 +224,8 @@ function getFile (file) {
 
 function sendFile (f) {
 	this.res.setHeader('Content-Length', f.length);
-	this.res.setHeader('Content-disposition', 'attachment; filename="' + file.name + '"');
-	this.res.setHeader('Content-Type', mime.lookup(file.name));
+	this.res.setHeader('Content-disposition', 'attachment; filename="' + this.file.name + '"');
+	this.res.setHeader('Content-Type', mime.lookup(this.file.name));
 	this.res.write(f, 'binary');
 	this.res.status(200).end();
 };
