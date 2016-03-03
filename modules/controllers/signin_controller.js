@@ -12,16 +12,31 @@ function post (req, res, next) {
 
 	usersHandler.getUserByUserName(req.body.username,
 		onGetUserByUserNameFailed.bind(callbackArgument),
-		createUser.bind(callbackArgument));
+		checkUserAndEmailAreFree.bind(callbackArgument));
 };
 
 function onGetUserByUserNameFailed (error) {
-	this.res.status(500).send('Internal error finding user');
+	this.res.status(500).send('Internal error finding user by username');
 };
 
-function createUser (user) {
+function checkUserAndEmailAreFree (user) {
 	if(user) {
-		this.res.status(401).send('Already existing user with that username');
+		this.res.status(401).send('Already existing user with that username.');
+	} else {
+		var callbackArgument = {req: this.req, res: this.res};
+		usersHandler.getUserByEmail(this.req.body.email,
+			onGetUserByEmailFailed.bind(callbackArgument),
+			createUser.bind(callbackArgument));
+	}
+};
+
+function onGetUserByEmailFailed (error) {
+	this.res.status(500).send('Internal error finding user by email');
+};
+
+function createUser(user) {
+	if(user) {
+		this.res.status(401).send('Already existing user with that email.');
 	} else {
 		var callbackArgument = {req: this.req, res: this.res};
 

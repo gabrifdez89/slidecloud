@@ -1,6 +1,7 @@
 var models = require('../models/models.js');
 
 exports.getUserByUserName = getUserByUserName;
+exports.getUserByEmail = getUserByEmail;
 exports.createUser = createUser;
 exports.saveUser = saveUser;
 
@@ -14,6 +15,20 @@ function getUserByUserName (userName, errorCallback, callback) {
 		callback(user);
 	}).catch(function (error) {
 		console.log('Error finding user by user name: ' + error);
+		errorCallback(error);
+	});
+};
+
+/*.**/
+function getUserByEmail (email, errorCallback, callback) {
+	models.User.find({
+		where: {
+			email: email
+		}
+	}).then(function (user) {
+		callback(user);
+	}).catch(function (error) {
+		console.log('Error finding user by email: ' + error);
 		errorCallback(error);
 	});
 };
