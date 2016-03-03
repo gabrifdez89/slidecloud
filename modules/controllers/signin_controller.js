@@ -1,10 +1,12 @@
 var usersHandler = require('../persistence/usersHandler.js'),
 	mailingService = require('../mailing/mailingService.js'),
-	emailFactory = require('../mailing/emailFactory.js');
+	emailFactory = require('../mailing/emailFactory.js'),
+	authController = require('../controllers/auth_controller.js');
 
-exports.post = post;
+exports.post = post; /* POST /signin **/
+exports.validate = validate; /* POST /validate **/
 
-/*.**/
+/* POST /signin **/
 function post (req, res, next) {
 	var callbackArgument = {res: res, req: req};
 
@@ -60,4 +62,40 @@ function onSendEmailFailed (error) {
 
 function onSendEmailSucceeded (response) {
 	this.res.status(200).send('User account created');
-}
+};
+
+/* POST /validate **/
+function validate (req, res, next) {
+	var callbackArgument = {req: req, res: res};
+	usersHandler.getUserByUserName(req.body.username,
+		onGetUserByUserNameFailed.bind(callbackArgument),
+		verifyToken.bind(callbackArgument));
+};
+
+function verifyToken (user) {
+	var callbackArgument = {req: this.req, res: this.res},
+		verified = authController.verifyToken(this.req.body.token, this.req.body.username);
+
+	if(verified === false) {
+		this.res.status(401).send('Provided token does not authorize to this action');
+	} else {
+		validateAccountAndSave.bind(callbackArgument)(user);
+	}
+};
+
+function validateAccountAndSave (user) {
+	var callbackArgument = {req: this.req, res: this.res};
+	user.validated = true;
+
+	usersHandler.saveUser(user,
+		onSaveUserFailed.bind(callbackArgument),
+		onSaveUserSucceeded.bind(callbackArgument));
+};
+
+function onSaveUserFailed (error) {
+	this.res.status(500).send('Error saving validated user');
+};
+
+function onSaveUserSucceeded (savedUser) {
+	this.res.status(200).send('Account validated');
+};
