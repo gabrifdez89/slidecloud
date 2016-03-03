@@ -89,23 +89,28 @@ function validate (req, res, next) {
 };
 
 function verifyToken (user) {
-	var callbackArgument = {req: this.req, res: this.res},
-		verified = authController.verifyToken(this.req.body.token, this.req.body.username);
+	var callbackArgument = {req: this.req, res: this.res, user: user};
 
-	if(verified === false) {
-		this.res.status(401).send('Provided token does not authorize to this action');
-	} else {
-		validateAccountAndSave.bind(callbackArgument)(user);
-	}
+	authController.verifyToken(this.req.body.token, this.req.body.username,
+		onVerifyTokenFailed.bind(callbackArgument),
+		validateAccountAndSave.bind(callbackArgument));
 };
 
-function validateAccountAndSave (user) {
-	var callbackArgument = {req: this.req, res: this.res};
-	user.validated = true;
+function onVerifyTokenFailed (error) {
+	this.res.status(401).send('Provided token does not authorize to this action');
+};
 
-	usersHandler.saveUser(user,
-		onSaveUserFailed.bind(callbackArgument),
-		onSaveUserSucceeded.bind(callbackArgument));
+function validateAccountAndSave (verifiedToken) {
+	if(!verifiedToken) {
+		this.res.status(401).send('Provided token does not authorize to this action');
+	} else {
+		var callbackArgument = {req: this.req, res: this.res};
+		this.user.validated = true;
+
+		usersHandler.saveUser(this.user,
+			onSaveUserFailed.bind(callbackArgument),
+			onSaveUserSucceeded.bind(callbackArgument));
+	}
 };
 
 function onSaveUserFailed (error) {

@@ -52,7 +52,7 @@ function deleteFile (file, errorCallback, callback) {
 			callbackArgument = {destiny: destiny};
 
 		fs.unlink(destiny, onUnlink.bind(callbackArgument));
-		callback();
+		callback(file);
 	}catch(error) {
 		errorCallback(error);
 	}

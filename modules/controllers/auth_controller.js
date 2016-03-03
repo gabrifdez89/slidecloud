@@ -43,19 +43,20 @@ function signToken (username) {
 };
 
 /*.**/
-function verifyToken (token, username) {
-	jwt.verify(token, secret, onTokenVerified.bind({username: username}));
+function verifyToken (token, username, errorCallback, callback) {
+	var callbackArgument = {errorCallback: errorCallback, callback: callback, username: username};
+	jwt.verify(token, secret, onTokenVerified.bind(callbackArgument));
 };
 
 function onTokenVerified (err, decoded) {
 	if(err) {
-		console.log('error verifying');
-		return false;
+		console.log('error verifying: ' + err);
+		this.errorCallback(err);
 	} else {
 		if(decoded.username !== this.username) {
-			return false;
+			this.callback(false);
 		}
 
-		return decoded;
+		this.callback(true);
 	}
 };

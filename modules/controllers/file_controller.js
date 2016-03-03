@@ -17,13 +17,26 @@ function files (req, res, next) {
 	if(!req.headers['token']) {
 		res.status(401).send('You need to provide a token for that action');
 	} else {
-		var verify = authController.verifyToken(req.headers['token'], req.params.user);
-		if(verify === false) {
-			res.status(401).send('Provided token is not valid for this action');
-		} else {
-			var callbackArgument = {req: req, res: res};
-			usersHandler.getUserByUserName(req.params.user, onGetUserByUserNameFailed.bind(callbackArgument) ,getFilesByUserId.bind(callbackArgument));
-		}
+		var callbackArgument = {req: req, res: res};
+
+		authController.verifyToken(req.headers['token'], req.params.user,
+			onVerifyTokenFailed.bind(callbackArgument),
+			getUserByUserNameAndGetFiles.bind(callbackArgument));
+	}
+};
+
+function onVerifyTokenFailed (error) {
+	this.res.status(500).send('Error verifying token');
+};
+
+function getUserByUserNameAndGetFiles (verifiedToken) {
+	if (!verifiedToken) {
+		res.status(401).send('Provided token is not valid for this action');
+	} else {
+		var callbackArgument = {req: this.req, res: this.res};
+		usersHandler.getUserByUserName(this.req.params.user,
+			onGetUserByUserNameFailed.bind(callbackArgument),
+			getFilesByUserId.bind(callbackArgument));
 	}
 };
 
@@ -55,15 +68,23 @@ function create (req, res, next) {
 	if(!req.headers['token']) {
 		res.status(401).send('You need to provide a token for that action');
 	} else {
-		var verify = authController.verifyToken(req.headers['token'], req.params.user);
-		if(verify === false) {
-			res.status(401).send('Provided token is not valid for this action');
-		} else {
-			var callbackArgument = {res: res, req: req};
-		 	filesHandler.userHasSomeFileWithName(req.params.user, req.body.data,
-		 		undoChanges.bind(callbackArgument),
-		 		checkAndCreate.bind(callbackArgument));
-		}
+		var callbackArgument = {res: res, req: req};
+
+		authController.verifyToken(req.headers['token'], req.params.user,
+			onVerifyTokenFailed.bind(callbackArgument),
+			checkUserHasSomeFileWithName.bind(callbackArgument));
+	}
+};
+
+function checkUserHasSomeFileWithName (verifiedToken) {
+	if(!verifiedToken) {
+		this.res.status(401).send('Provided token is not valid for this action');
+	} else {
+		var callbackArgument = {res: this.res, req: this.req};
+	 	
+	 	filesHandler.userHasSomeFileWithName(this.req.params.user, this.req.body.data,
+	 		undoChanges.bind(callbackArgument),
+	 		checkAndCreate.bind(callbackArgument));
 	}
 };
 
@@ -138,6 +159,7 @@ function onCreateFilesFailed (error) {
 
 function saveFiles (files) {
 	var callbackArgument = {req: this.req, res: this.res};
+
 	filesHandler.saveFiles(files,
 		onSaveFilesFailed.bind(callbackArgument),
 		onSaveFilesSucceded.bind(callbackArgument));
@@ -157,15 +179,23 @@ function deleteFn (req, res, next) {
 	if(!req.headers['token']) {
 		res.status(401).send('You need to provide a token for that action');
 	} else {
-		var verify = authController.verifyToken(req.headers['token'], req.params.user);
-		if(verify === false) {
-			res.status(401).send('Provided token is not valid for this action');
-		} else {
-			var callbackArgument = {req: req, res: res};
-			filesHandler.getFileById(req.params.fileId,
-				onGetFileByIdFailed.bind(callbackArgument),
-				deleteFile.bind(callbackArgument));
-		}
+		var callbackArgument = {req: req, res: res};
+
+		authController.verifyToken(req.headers['token'], req.params.user,
+			onVerifyTokenFailed.bind(callbackArgument),
+			getFileByIdAndDeleteIt.bind(callbackArgument));
+	}
+};
+
+function getFileByIdAndDeleteIt (verifiedToken) {
+	if(!verifiedToken) {
+		this.res.status(401).send('Provided token is not valid for this action');
+	} else {
+		var callbackArgument = {req: this.req, res: this.res};
+
+		filesHandler.getFileById(this.req.params.fileId,
+			onGetFileByIdFailed.bind(callbackArgument),
+			deleteFile.bind(callbackArgument));
 	}
 };
 
@@ -205,10 +235,27 @@ function onGetFileByIdFailed () {
 
 /* GET /users/:user/files/:fileId **/
 function get (req, res, next) {
-	var callbackArgument = {req: req, res: res};
-	filesHandler.getFileById(req.params.fileId,
-		onGetFileByIdFailed.bind(callbackArgument),
-		getFile.bind(callbackArgument));
+	if(!req.query.token) {
+		res.status(401).send('You need to provide a token for that action');
+	} else {
+		var callbackArgument = {req: req, res: res};
+
+		authController.verifyToken(req.query.token, req.params.user,
+			onVerifyTokenFailed.bind(callbackArgument),
+			getFileById.bind(callbackArgument));
+	}
+};
+
+function getFileById (verifiedToken) {
+	if(!verifiedToken) {
+		this.res.status(401).send('Invalid token');
+	} else {
+		var callbackArgument = {req: this.req, res: this.res};
+
+		filesHandler.getFileById(this.req.params.fileId,
+			onGetFileByIdFailed.bind(callbackArgument),
+			getFile.bind(callbackArgument));
+	}
 };
 
 function getFile (file) {
