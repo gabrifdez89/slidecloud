@@ -1,4 +1,4 @@
-var fs = require('fs'),
+var fs = require('fs-extra'),
 	originPath = './uploads/',
 	destinyPath = './files/';
 
@@ -13,7 +13,8 @@ function moveFilesToTree (files, fileNames, user, errorCallback, callback) {
 		callbackArgument = {
 			fileNumber: fileNumber,
 			fileNames: fileNames,
-			user: user
+			user: user,
+			errorCallback: errorCallback
 		};
 	try{
 		files.forEach(moveFileToTree.bind(callbackArgument));
@@ -31,10 +32,11 @@ function moveFileToTree (file) {
 			fileNumber: this.fileNumber,
 			fileNames: this.fileNames,
 			origin: origin,
-			destiny: destiny
+			destiny: destiny,
+			errorCallback: this.errorCallback
 		};
-
-	fs.rename(origin, destiny,
+	console.log('destiny: ' + destiny);
+	fs.move(origin, destiny,
 		onRename.bind(callbackArgument));
 	this.fileNumber++;
 };
@@ -42,6 +44,7 @@ function moveFileToTree (file) {
 function onRename (err) {
 	if(err) {
 		console.log('Error moving file ' + this.fileNames[this.fileNumber] + ' from ' + this.origin + ' to ' + this.destiny);
+		this.errorCallback(err);
 	}
 };
 
