@@ -1,6 +1,6 @@
 var jwt = require('jsonwebtoken'),
 	secret = 'sampleSecret',
-	webclientUrl = 'http://localhost:3030/#/login';
+	webclientUrl = 'http://slidecloud.herokuapp.com/#/login';
 
 exports.createValidationEmail = createValidationEmail;
 
