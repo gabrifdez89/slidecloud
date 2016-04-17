@@ -5,13 +5,16 @@ var path = require('path'),
 		storage: 'slideCloudDb.sqlite'
 	}),
 	User = sequelize.import(path.join(__dirname, 'user')),
-	File = sequelize.import(path.join(__dirname, 'file'));
+	File = sequelize.import(path.join(__dirname, 'file')),
+	Presentation = sequelize.import(path.join(__dirname, 'presentation'));
 
 File.belongsTo(User);
 User.hasMany(File);
+Presentation.belongsTo(File);
 
 exports.User = User;
 exports.File = File;
+exports.Presentation = Presentation;
 
 //Initializing DB when it is empty
 sequelize.sync().then(onSync);

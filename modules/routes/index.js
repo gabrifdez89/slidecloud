@@ -4,7 +4,8 @@ var express = require('express'),
 	upload = multer({dest: './uploads/'}),
 	fileController = require('../controllers/file_controller.js'),
 	authController = require('../controllers/auth_controller.js'),
-	signinController = require('../controllers/signin_controller.js');
+	signinController = require('../controllers/signin_controller.js'),
+	presentationController = require('../controllers/presentation_controller.js');
 
 /* GET home page. */
 router.get('/', function(req, res) {
@@ -21,5 +22,6 @@ router.post('/authenticate',								authController.post);
 router.post('/signin',										signinController.post);
 router.post('/validate',									signinController.validate);
 router.post('/requestvalidationemail',						signinController.requestValidationEmail);
+router.post('/users/:user/files/:fileId/startpresentation',	presentationController.startPresentation);
 
 module.exports = router;
