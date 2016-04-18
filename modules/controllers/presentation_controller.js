@@ -7,6 +7,7 @@ exports.startPresentation = startPresentation; /* POST /users/:user/files/:fileI
 
 /* POST /users/:user/files/:fileId/startpresentation **/
 function startPresentation (req, res, next) {
+	console.log('token: ' + req.headers['token']);
 	if(!req.headers['token']) {
 		res.status(401).send('You need to provide a token for that action');
 	} else {
@@ -24,7 +25,7 @@ function onVerifyTokenFailed (error) {
 
 function getFileById (verifiedToken) {
 	var callbackArgument = {req: this.req, res: this.res};
-	filesHandler.getFileById(req.params.fileId,
+	filesHandler.getFileById(this.req.params.fileId,
 		onGetFileByIdFailed.bind(callbackArgument),
 		checkFileBelongsToUser.bind(callbackArgument));
 };
@@ -35,7 +36,7 @@ function onGetFileByIdFailed (error) {
 
 function checkFileBelongsToUser (file) {
 	var callbackArgument = {req: this.req, res: this.res};
-	fileshandler.userHasSomeFileWithName(req.params.user, [file.name],
+	filesHandler.userHasSomeFileWithName(this.req.params.user, [file.name],
 		onUserHasSomeFileWithNameFailed.bind(callbackArgument),
 		createPresentation.bind(callbackArgument));
 };
@@ -47,7 +48,7 @@ function onUserHasSomeFileWithNameFailed (error) {
 function createPresentation () {
 	//Crear instancia de presentation con referencia al fichero req.params.fileId y persistir
 	var callbackArgument = {req: this.req, res: this.res};
-	presentationsHandler.createPresentationForFileId(req.params.fileId,
+	presentationsHandler.createPresentationForFileId(this.req.params.fileId,
 		onCreatePresentationForFileIdFailed.bind(callbackArgument),
 		savePresentation.bind(callbackArgument));
 };
