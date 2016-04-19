@@ -3,6 +3,7 @@ var models = require('../models/models.js'),
 	fileSystemHandler = require('../fileSystem/fileSystemHandler.js'),
 	usersHandler = require('../persistence/usersHandler.js'),
 	filesHandler = require('../persistence/filesHandler.js'),
+	presentationsHandler = require('../persistence/presentationsHandler.js'),
 	mime = require('mime'),
 	authController = require('../controllers/auth_controller.js');
 
@@ -235,14 +236,33 @@ function onGetFileByIdFailed () {
 
 /* GET /users/:user/files/:fileId **/
 function get (req, res, next) {
+	var callbackArgument = {req: req, res: res};
 	if(!req.query.token) {
-		res.status(401).send('You need to provide a token for that action');
+		presentationsHandler.checkIfThereIsAPresentationForFileId(req.params.fileId,
+			onCheckIfThereIsAPresentationFailed.bind(callbackArgument),
+			getFileByIdWithoutToken.bind(callbackArgument));
 	} else {
-		var callbackArgument = {req: req, res: res};
-
 		authController.verifyToken(req.query.token, req.params.user,
 			onVerifyTokenFailed.bind(callbackArgument),
 			getFileById.bind(callbackArgument));
+	}
+};
+
+function onCheckIfThereIsAPresentationFailed () {
+	res.status(401).send('You need to provide a token for that action');
+};
+
+function getFileByIdWithoutToken (presentations) {
+	console.log('Presentations: ' + presentations);
+	if(presentations.length > 0)
+	{
+		var callbackArgument = {req: this.req, res: this.res};
+
+		filesHandler.getFileById(this.req.params.fileId,
+				onGetFileByIdFailed.bind(callbackArgument),
+				getFile.bind(callbackArgument));
+	} else {
+		this.res.status(404).send('No existing presentation for file');
 	}
 };
 

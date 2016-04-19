@@ -69,6 +69,6 @@ function onSavePresentationFailed (error) {
 };
 
 function generatePresentationLink (presentation) {
-	var link = presentationLinkGenerator.generateLink(presentation);
+	var link = presentationLinkGenerator.generateLink(presentation, this.req.params.user);
 	this.res.status(200).send(link);
 };
