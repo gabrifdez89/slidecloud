@@ -23,5 +23,6 @@ router.post('/signin',										signinController.post);
 router.post('/validate',									signinController.validate);
 router.post('/requestvalidationemail',						signinController.requestValidationEmail);
 router.post('/users/:user/files/:fileId/startpresentation',	presentationController.startPresentation);
+router.delete('/users/:user/files/:fileId/presentation',	presentationController.deletePresentation);
 
 module.exports = router;

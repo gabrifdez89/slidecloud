@@ -2,7 +2,8 @@ var models = require('../models/models.js');
 
 exports.createPresentationForFileId = createPresentationForFileId;
 exports.savePresentation = savePresentation;
-exports.checkIfThereIsAPresentationForFileId = checkIfThereIsAPresentationForFileId;
+exports.getPresentationByFileId = getPresentationByFileId;
+exports.deletePresentation = deletePresentation;
 
 /*.**/
 function createPresentationForFileId (fileId, errorCallback, callback) {
@@ -12,7 +13,6 @@ function createPresentationForFileId (fileId, errorCallback, callback) {
 		});
 		callback(presentation);
 	}catch(error){
-		console.log('Error creating the presentation');
 		errorCallback(error);
 	}
 };
@@ -29,13 +29,24 @@ function savePresentation (presentation, errorCallback, callback) {
 };
 
 /*.**/
-function checkIfThereIsAPresentationForFileId (fileId, errorCallback, callback) {
+function getPresentationByFileId (fileId, errorCallback, callback) {
+	console.log('fileId: ' + fileId);
 	models.Presentation.findAll({
 		where: {
 			fileId: fileId
 		}
 	}).then(function (presentations) {
 		callback(presentations);
+	}).catch(function (error) {
+		errorCallback(error);
+	});
+};
+
+/*.**/
+function deletePresentation (presentation, errorCallback, callback) {
+	presentation.destroy()
+	.then(function () {
+		callback();
 	}).catch(function (error) {
 		errorCallback(error);
 	});

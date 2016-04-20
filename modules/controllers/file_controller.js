@@ -238,8 +238,8 @@ function onGetFileByIdFailed () {
 function get (req, res, next) {
 	var callbackArgument = {req: req, res: res};
 	if(!req.query.token) {
-		presentationsHandler.checkIfThereIsAPresentationForFileId(req.params.fileId,
-			onCheckIfThereIsAPresentationFailed.bind(callbackArgument),
+		presentationsHandler.getPresentationByFileId(req.params.fileId,
+			onGetPresentationByFileIdFailed.bind(callbackArgument),
 			getFileByIdWithoutToken.bind(callbackArgument));
 	} else {
 		authController.verifyToken(req.query.token, req.params.user,
@@ -248,7 +248,7 @@ function get (req, res, next) {
 	}
 };
 
-function onCheckIfThereIsAPresentationFailed () {
+function onGetPresentationByFileIdFailed () {
 	res.status(401).send('You need to provide a token for that action');
 };
 

@@ -4,10 +4,11 @@ var authController = require('../controllers/auth_controller.js'),
 	presentationLinkGenerator = require('../presentations/presentationLinkGenerator');
 
 exports.startPresentation = startPresentation; /* POST /users/:user/files/:fileId/startpresentation **/
+exports.deletePresentation = deletePresentation; /* DELETE /users/:user/files/:fileId/presentation **/
+
 
 /* POST /users/:user/files/:fileId/startpresentation **/
 function startPresentation (req, res, next) {
-	console.log('token: ' + req.headers['token']);
 	if(!req.headers['token']) {
 		res.status(401).send('You need to provide a token for that action');
 	} else {
@@ -71,4 +72,47 @@ function onSavePresentationFailed (error) {
 function generatePresentationLink (presentation) {
 	var link = presentationLinkGenerator.generateLink(presentation, this.req.params.user);
 	this.res.status(200).send(link);
+};
+
+/* DELETE /users/:user/files/:fileId/presentation **/
+function deletePresentation (req, res, next) {
+	if(!req.headers['token']) {
+		res.status(401).send('You need to provide a token for that action');
+	} else {
+		var callbackArgument = {res: res, req: req};
+
+		authController.verifyToken(req.headers['token'], req.params.user,
+			onVerifyTokenFailed.bind(callbackArgument),
+			getPresentationByFileId.bind(callbackArgument));
+	}
+};
+
+function getPresentationByFileId (verifiedToken) {
+	var callbackArgument = {req: this.req, res: this.res};
+	presentationsHandler.getPresentationByFileId(this.req.params.fileId,
+		onGetPresentationByFileIdFailed.bind(callbackArgument),
+		doDeletePresentation.bind(callbackArgument));
+};
+
+function onGetPresentationByFileIdFailed (error) {
+	this.res.status(500).send('Internal error finding presentation for that file');
+};
+
+function doDeletePresentation (presentations) {
+	if(presentations.length > 0) {
+		var callbackArgument = {req: this.req, res: this.res};
+		presentationsHandler.deletePresentation(presentations[0],
+			onDeletePresentationFailed.bind(callbackArgument),
+			onDeletePresentationSucceeded.bind(callbackArgument));
+	} else {
+		this.res.status(404).send('Not found presentation for that file');
+	}
+};
+
+function onDeletePresentationFailed (error) {
+	this.res.status(500).send('Internal error while deleting presentation');
+};
+
+function onDeletePresentationSucceeded () {
+	this.res.status(200).send('Presentation deleted');
 };
