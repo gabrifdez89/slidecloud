@@ -4,6 +4,7 @@ exports.getUserByUserName = getUserByUserName;
 exports.getUserByEmail = getUserByEmail;
 exports.createUser = createUser;
 exports.saveUser = saveUser;
+exports.deleteUser = deleteUser;
 
 /*.**/
 function getUserByUserName (userName, errorCallback, callback) {
@@ -60,3 +61,13 @@ function saveUser (user, errorCallback, callback) {
 		errorCallback(error);
 	});
 };
+
+/*.**/
+function deleteUser (user, errorCallback, callback) {
+	user.destroy()
+	.then(function () {
+		callback();
+	}).catch(function (error) {
+		errorCallback(error);
+	});
+}

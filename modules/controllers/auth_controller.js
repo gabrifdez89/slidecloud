@@ -1,9 +1,37 @@
 var usersHandler = require('../persistence/usersHandler.js'),
 	jwt = require('jsonwebtoken'),
-	secret = 'sampleSecret';
+	fs = require('fs'),
+	config = getConfig('config.json'),
+	secret;
+
+try{
+	secret = config.secret;
+} catch (error) {
+	secret = 'nosecret';
+	console.log('secret is not defined.')
+}
 
 exports.post = post;
 exports.verifyToken = verifyToken;
+
+function getConfig (file) {
+	var filepath;
+	try {
+		filepath = __dirname + '/../../' + file;
+		return readJsonFileSync(filepath);
+	} catch (error) {
+		console.log('config.json file is not defined. You need to define it to store the secret.');
+	}
+};
+
+function readJsonFileSync(filepath, encoding) {
+	var file;
+	if (typeof (encoding) == 'undefined') {
+		encoding = 'utf8';
+	}
+	file = fs.readFileSync(filepath, encoding);
+	return JSON.parse(file);
+};
 
 /*.**/
 function post (req, res, next) {
