@@ -10,10 +10,11 @@ function listen (server) {
 	io.on('connection', connection);
 
 	function connection (socket) {
+		var callbackArgument = {socket: socket};
 		console.log('NEW USER CONNECTED');
 
 		socket.on('disconnect', onDisconnect);
-		socket.on('createNamespace', createNamespace);
+		socket.on('createNamespace', createNamespace.bind(callbackArgument));
 	};
 
 	function onDisconnect () {
@@ -25,6 +26,7 @@ function listen (server) {
 			callbackArgument = {nsp: nsp};
 		console.log('CREATED NAMESPACE: ' + namespace);
 		nsp.on('connection', onNamespaceConnection.bind(callbackArgument));
+		this.socket.emit('namespaceCreated', namespace);
 	};
 
 	function onNamespaceConnection (socket) {

@@ -39,15 +39,33 @@ function checkFileBelongsToUser (file) {
 	var callbackArgument = {req: this.req, res: this.res};
 	filesHandler.userHasSomeFileWithName(this.req.params.user, [file.name],
 		onUserHasSomeFileWithNameFailed.bind(callbackArgument),
-		createPresentation.bind(callbackArgument));
+		tryRetrievePresentation.bind(callbackArgument));
 };
 
 function onUserHasSomeFileWithNameFailed (error) {
 	this.res.status(404).send('Not existing file for current user');
 };
 
-function createPresentation () {
+function tryRetrievePresentation () {
 	//Crear instancia de presentation con referencia al fichero req.params.fileId y persistir
+	var callbackArgument = {req: this.req, res: this.res};
+	presentationsHandler.getPresentationByFileId(this.req.params.fileId,
+		onGetPresentationByFileIdFailed.bind(callbackArgument),
+		onGetPresentationByFileIdSucceeded.bind(callbackArgument));
+};
+
+function onGetPresentationByFileIdSucceeded (presentations) {
+	var callbackArgument = {req: this.req, res: this.res};
+	if(presentations.length !== 0) {
+		console.log('FOUND AT LEAST ONE PRESENTATION');
+		generatePresentationLink.bind(callbackArgument)(presentations[0]);
+	} else {
+		console.log('NONE PRESENTATION FOUND. CREATING NEW ONE');
+		createNewPresentation.bind(callbackArgument)();
+	}
+};
+
+function createNewPresentation () {
 	var callbackArgument = {req: this.req, res: this.res};
 	presentationsHandler.createPresentationForFileId(this.req.params.fileId,
 		onCreatePresentationForFileIdFailed.bind(callbackArgument),
