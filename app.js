@@ -6,6 +6,7 @@ var express = require('express'),
   bodyParser = require('body-parser'),
   cors = require('cors'),
   routes = require('./modules/routes/index'),
+  ioController = require('./modules/controllers/io_controller'),
   app = express();
 
 // Allow CORS
@@ -55,5 +56,5 @@ app.use(function(err, req, res, next) {
   });
 });
 
-
+app.ioController = ioController;
 module.exports = app;
