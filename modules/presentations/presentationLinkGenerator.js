@@ -1,4 +1,4 @@
-var webclientUrl = 'http://localhost:3030/#/presentation';
+var webclientUrl = 'http://slidecloud.herokuapp.com/#/presentation';
 
 exports.generateLink = generateLink;
 
