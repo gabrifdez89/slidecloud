@@ -1,26 +1,25 @@
-var nodeMailer = require('nodemailer'),
-	transport = 'smtps://slidecloudwebapp%40gmail.com:slidecloudslidecloud@smtp.gmail.com';
+var nodemailer = require('nodemailer'),
+	mg = require('nodemailer-mailgun-transport'),
+	auth = {
+		auth: {
+			api_key: 'key-a8bcc6e524468269028e58675478d003',
+			domain: 'slidecloud.tech'
+		}
+	},
+	nodemailerMailgun = nodemailer.createTransport(mg(auth));
 
 exports.sendEmail = sendEmail;
 
 function sendEmail (email, errorCallback, callback) {
-	try{
-		var callbackArgument = {errorCallback: errorCallback, callback: callback},
-			transporter = nodeMailer.createTransport(transport),
-			emailOptions = {
-				from: email.from,
-				to: email.to,
-				subject: email.to,
-				text: email.text,
-				html: email.html
-		};
-
-		transporter.sendMail(emailOptions,
-			onSendEmail.bind(callbackArgument));
-	}catch(error) {
-		console.log("Error creating nodemailer transporter");
-		errorCallback(error);
-	}
+	var callbackArgument = {errorCallback: errorCallback, callback: callback},
+		emailOptions = {
+			from: email.from,
+			to: email.to,
+			subject: email.to,
+			text: email.text,
+			html: email.html
+	};
+	nodemailerMailgun.sendMail(emailOptions, onSendEmail.bind(callbackArgument));
 };
 
 function onSendEmail (error, info) {

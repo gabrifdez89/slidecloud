@@ -52,7 +52,7 @@ function onCreateUserFailed (error) {
 };
 
 function saveUser (user) {
-	var callbackArgument = {req: this.req, res: this.res};
+	var callbackArgument = {req: this.req, res: this.res, user:user};
 
 	usersHandler.saveUser(user,
 		onSaveUserFailed.bind(callbackArgument),
@@ -64,7 +64,7 @@ function onSaveUserFailed (error) {
 };
 
 function sendEmail (user) {
-	var callbackArgument = {req: this.req, res: this.res},
+	var callbackArgument = {req: this.req, res: this.res, user: user},
 		email = emailFactory.createValidationEmail(user.email, user.username);
 
 	mailingService.sendEmail(email,
@@ -73,6 +73,18 @@ function sendEmail (user) {
 };
 
 function onSendEmailFailed (error) {
+	var callbackArgument = {req: this.req, res: this.res, user: this.user};
+	usersHandler.deleteUser(this.user,
+		onDeleteUserFailed.bind(callbackArgument),
+		onDeleteUserSucceeded.bind(callbackArgument));
+};
+
+function onDeleteUserFailed (error) {
+	console.log('Error deleting user account after error sending validation email');
+	this.res.status(500).send('Error sending validation email');
+};
+
+function onDeleteUserSucceeded () {
 	this.res.status(500).send('Error sending validation email');
 };
 
