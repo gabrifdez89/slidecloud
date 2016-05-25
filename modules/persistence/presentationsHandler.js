@@ -4,6 +4,7 @@ exports.createPresentationForFileId = createPresentationForFileId;
 exports.savePresentation = savePresentation;
 exports.getPresentationByFileId = getPresentationByFileId;
 exports.deletePresentation = deletePresentation;
+exports.deleteOldPresentations = deleteOldPresentations;
 
 /*.**/
 function createPresentationForFileId (fileId, errorCallback, callback) {
@@ -47,6 +48,26 @@ function deletePresentation (presentation, errorCallback, callback) {
 	presentation.destroy()
 	.then(function () {
 		callback();
+	}).catch(function (error) {
+		errorCallback(error);
+	});
+};
+
+/*.**/
+function deleteOldPresentations (errorCallback, callback) {
+	models.Presentation.findAll({
+		where: {
+			createdAt: {
+				lt: new Date(new Date() - 24 * 60 * 60 * 1000)
+			}
+		}
+	}).then(function (oldPresentations) {
+		var numDeleted = 0;
+		oldPresentations.forEach(function (presentation) {
+			presentation.destroy();
+			numDeleted++;
+		});
+		callback(numDeleted);
 	}).catch(function (error) {
 		errorCallback(error);
 	});

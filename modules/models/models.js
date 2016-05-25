@@ -20,12 +20,18 @@ exports.Presentation = Presentation;
 sequelize.sync().then(onSync);
 
 function onSync () {
-	User.count().then(populateDataBase);
+	User.count().then(initializeDataBase);
 };
 
-function populateDataBase (count) {
+function initializeDataBase (count) {
 	if(count === 0) {
-		User.create({
+		populateDataBase();
+		scheduleDailyCleanUpOfPresentations();
+	}
+};
+
+function populateDataBase () {
+	User.create({
 			username: 'pepe',
 			pass: 'pepe',
 			email: 'pepe@pepe.com',
@@ -37,5 +43,24 @@ function populateDataBase (count) {
 			email: 'juan@juan.com',
 			validated: true
 		});
-	}
+};
+
+function scheduleDailyCleanUpOfPresentations () {
+	new CronJob('00 00 03 * * *', cleanUpOfPresentations, onCleanUpOfPresentationsFinish, true, 'Europe/Madrid');
+};
+
+function cleanUpOfPresentations () {
+	presentationsHandler.deleteOldPresentations(onDeleteOldPresentationsError, onDeleteOldPresentationsSucceeded);
+};
+
+function onDeleteOldPresentationsError (error) {
+	console.log('ERROR DELETING OLD PRESENTATIONS: ' + error);
+};
+
+function onDeleteOldPresentationsSucceeded (numDeleted) {
+	console.log('NUMBER OF OLD PRESENTATIONS DELETED: ' + numDeleted);
+};
+
+function onCleanUpOfPresentationsFinish () {
+	console.log('FINISHED CLEANUP OF PRESENTATIONS');
 };
